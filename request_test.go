@@ -47,10 +47,13 @@ func TestRequest_Connect(t *testing.T) {
 	lAddr := l.Addr().(*net.TCPAddr)
 
 	// Make server
-	s := &Server{config: &Config{
+	s, err := New(&Config{
 		Rules:    PermitAll(),
 		Resolver: DNSResolver{},
-	}}
+	})
+	if err != nil {
+		t.Fatal("Err: %v", err)
+	}
 
 	// Create the connect request
 	req := bytes.NewBuffer(nil)
@@ -116,10 +119,13 @@ func TestRequest_Connect_RuleFail(t *testing.T) {
 	lAddr := l.Addr().(*net.TCPAddr)
 
 	// Make server
-	s := &Server{config: &Config{
+	s, err := New(&Config{
 		Rules:    PermitNone(),
 		Resolver: DNSResolver{},
-	}}
+	})
+	if err != nil {
+		t.Fatalf("Err: %v", err)
+	}
 
 	// Create the connect request
 	req := bytes.NewBuffer(nil)

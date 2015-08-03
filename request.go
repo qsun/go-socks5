@@ -104,7 +104,7 @@ func (s *Server) handleRequest(conn conn, bufConn io.Reader) error {
 	// Switch on the command
 	switch header[1] {
 	case connectCommand:
-		return s.handleConnect(conn, bufConn, dest, realDest)
+		return s.config.ConnectHandler.Connect(s, conn, bufConn, dest, realDest)
 	case bindCommand:
 		return s.handleBind(conn, bufConn, dest, realDest)
 	case associateCommand:
@@ -118,7 +118,7 @@ func (s *Server) handleRequest(conn conn, bufConn io.Reader) error {
 }
 
 // handleConnect is used to handle a connect command
-func (s *Server) handleConnect(conn conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
+func (s *Server) Connect(_s *Server, conn conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
 	// Check if this is allowed
 	client := conn.RemoteAddr().(*net.TCPAddr)
 	if !s.config.Rules.AllowConnect(realDest.IP, realDest.Port, client.IP, client.Port) {

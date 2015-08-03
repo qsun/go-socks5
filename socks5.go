@@ -3,6 +3,7 @@ package socks5
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"net"
 )
@@ -10,6 +11,10 @@ import (
 const (
 	socks5Version = uint8(5)
 )
+
+type ConnectHandler interface {
+	Connect(*Server, conn, io.Reader, *AddrSpec, *AddrSpec) error
+}
 
 // Config is used to setup and configure a Server
 type Config struct {
@@ -38,6 +43,9 @@ type Config struct {
 
 	// BindIP is used for bind or udp associate
 	BindIP net.IP
+
+	// Optional HandleConnect
+	ConnectHandler ConnectHandler
 }
 
 // Server is reponsible for accepting connections and handling
@@ -70,6 +78,10 @@ func New(conf *Config) (*Server, error) {
 
 	server := &Server{
 		config: conf,
+	}
+
+	if conf.ConnectHandler == nil {
+		conf.ConnectHandler = server
 	}
 
 	server.authMethods = make(map[uint8]Authenticator)
