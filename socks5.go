@@ -12,8 +12,12 @@ const (
 	socks5Version = uint8(5)
 )
 
+type Conn interface {
+	Write([]byte) (int, error)
+	RemoteAddr() net.Addr
+}
 type ConnectHandler interface {
-	Connect(*Server, conn, io.Reader, *AddrSpec, *AddrSpec) error
+	Connect(*Server, Conn, io.Reader, *AddrSpec, *AddrSpec) error
 }
 
 // Config is used to setup and configure a Server

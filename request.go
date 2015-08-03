@@ -47,11 +47,6 @@ type AddrSpec struct {
 	Port int
 }
 
-type conn interface {
-	Write([]byte) (int, error)
-	RemoteAddr() net.Addr
-}
-
 func (a *AddrSpec) String() string {
 	if a.FQDN != "" {
 		return fmt.Sprintf("%s (%s):%d", a.FQDN, a.IP, a.Port)
@@ -60,7 +55,7 @@ func (a *AddrSpec) String() string {
 }
 
 // handleRequest is used for request processing after authentication
-func (s *Server) handleRequest(conn conn, bufConn io.Reader) error {
+func (s *Server) handleRequest(conn Conn, bufConn io.Reader) error {
 	// Read the version byte
 	header := []byte{0, 0, 0}
 	if _, err := io.ReadAtLeast(bufConn, header, 3); err != nil {
@@ -118,7 +113,7 @@ func (s *Server) handleRequest(conn conn, bufConn io.Reader) error {
 }
 
 // handleConnect is used to handle a connect command
-func (s *Server) Connect(_s *Server, conn conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
+func (s *Server) Connect(_s *Server, conn Conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
 	// Check if this is allowed
 	client := conn.RemoteAddr().(*net.TCPAddr)
 	if !s.config.Rules.AllowConnect(realDest.IP, realDest.Port, client.IP, client.Port) {
@@ -166,7 +161,7 @@ func (s *Server) Connect(_s *Server, conn conn, bufConn io.Reader, dest, realDes
 }
 
 // handleBind is used to handle a connect command
-func (s *Server) handleBind(conn conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
+func (s *Server) handleBind(conn Conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
 	// Check if this is allowed
 	client := conn.RemoteAddr().(*net.TCPAddr)
 	if !s.config.Rules.AllowBind(realDest.IP, realDest.Port, client.IP, client.Port) {
@@ -184,7 +179,7 @@ func (s *Server) handleBind(conn conn, bufConn io.Reader, dest, realDest *AddrSp
 }
 
 // handleAssociate is used to handle a connect command
-func (s *Server) handleAssociate(conn conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
+func (s *Server) handleAssociate(conn Conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
 	// Check if this is allowed
 	client := conn.RemoteAddr().(*net.TCPAddr)
 	if !s.config.Rules.AllowAssociate(realDest.IP, realDest.Port, client.IP, client.Port) {
