@@ -1,3 +1,5 @@
+_slightly modified to implement [https://github.com/qsun/https_or_proxy](https://github.com/qsun/https_or_proxy)_
+
 go-socks5 [![Build Status](https://travis-ci.org/armon/go-socks5.png)](https://travis-ci.org/armon/go-socks5)
 =========
 
