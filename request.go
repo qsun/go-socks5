@@ -99,7 +99,7 @@ func (s *Server) handleRequest(conn Conn, bufConn io.Reader) error {
 	// Switch on the command
 	switch header[1] {
 	case connectCommand:
-		return s.config.ConnectHandler.Connect(s, conn, bufConn, dest, realDest)
+		return s.handleConnect(conn, bufConn, dest, realDest)
 	case bindCommand:
 		return s.handleBind(conn, bufConn, dest, realDest)
 	case associateCommand:
@@ -113,9 +113,9 @@ func (s *Server) handleRequest(conn Conn, bufConn io.Reader) error {
 }
 
 // handleConnect is used to handle a connect command
-func (s *Server) Connect(_s *Server, conn Conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
-	// Check if this is allowed
+func (s *Server) handleConnect(conn Conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
 	client := conn.RemoteAddr().(*net.TCPAddr)
+
 	if !s.config.Rules.AllowConnect(realDest.IP, realDest.Port, client.IP, client.Port) {
 		if err := sendReply(conn, ruleFailure, nil); err != nil {
 			return fmt.Errorf("Failed to send reply: %v", err)
@@ -123,9 +123,8 @@ func (s *Server) Connect(_s *Server, conn Conn, bufConn io.Reader, dest, realDes
 		return fmt.Errorf("Connect to %v blocked by rules", dest)
 	}
 
-	// Attempt to connect
-	addr := net.TCPAddr{IP: realDest.IP, Port: realDest.Port}
-	target, err := net.DialTCP("tcp", nil, &addr)
+	target, err := s.config.ConnectHandler.Connect(s, conn, bufConn, dest, realDest)
+
 	if err != nil {
 		msg := err.Error()
 		resp := hostUnreachable
@@ -158,6 +157,15 @@ func (s *Server) Connect(_s *Server, conn Conn, bufConn io.Reader, dest, realDes
 	case e := <-errCh:
 		return e
 	}
+}
+
+func (s *Server) Connect(_s *Server, conn Conn, bufConn io.Reader, dest, realDest *AddrSpec) (*net.TCPConn, error) {
+	// Check if this is allowed
+
+	// Attempt to connect
+	addr := net.TCPAddr{IP: realDest.IP, Port: realDest.Port}
+	target, err := net.DialTCP("tcp", nil, &addr)
+	return target, err
 }
 
 // handleBind is used to handle a connect command

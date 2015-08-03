@@ -17,7 +17,7 @@ type Conn interface {
 	RemoteAddr() net.Addr
 }
 type ConnectHandler interface {
-	Connect(*Server, Conn, io.Reader, *AddrSpec, *AddrSpec) error
+	Connect(*Server, Conn, io.Reader, *AddrSpec, *AddrSpec) (*net.TCPConn, error)
 }
 
 // Config is used to setup and configure a Server
